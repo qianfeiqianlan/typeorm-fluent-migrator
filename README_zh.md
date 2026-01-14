@@ -8,7 +8,7 @@
   > 一个流畅、类型安全的 TypeORM 迁移封装库，消除样板代码，让数据库迁移像英文句子一样易读。
   
   [![Build Status](https://img.shields.io/github/actions/workflow/status/qianfeiqianlan/typeorm-fluent-migrator/ci.yml)](https://github.com/qianfeiqianlan/typeorm-fluent-migrator/actions)
-  [![Coverage](https://img.shields.io/codecov/c/github/qianfeiqianlan/typeorm-fluent-migrator)](https://codecov.io/gh/qianfeiqianlan/typeorm-fluent-migrator)
+  [![codecov](https://codecov.io/github/qianfeiqianlan/typeorm-fluent-migrator/graph/badge.svg?token=WD0IUH9NDP)](https://codecov.io/github/qianfeiqianlan/typeorm-fluent-migrator)
   [![NPM Version](https://img.shields.io/npm/v/typeorm-fluent-migrator.svg)](https://www.npmjs.com/package/typeorm-fluent-migrator)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 </div>

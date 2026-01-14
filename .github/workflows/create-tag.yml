@@ -6,16 +6,19 @@ on:
 jobs:
   create-tag:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Read version from package.json
         id: package-version
@@ -40,12 +43,15 @@ jobs:
 
       - name: Create tag
         if: steps.check-tag.outputs.exists == 'false'
+        env:
+          GIT_TOKEN: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.package-version.outputs.tag }}"
           VERSION="${{ steps.package-version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release version $VERSION"
+          git remote set-url origin https://x-access-token:${GIT_TOKEN}@github.com/${{ github.repository }}.git
           git push origin "$TAG"
           echo "✅ Successfully created and pushed tag $TAG"
 

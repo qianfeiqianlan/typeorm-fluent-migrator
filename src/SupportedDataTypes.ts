@@ -1,6 +1,3 @@
-/**
- * MySQL / Aurora MySQL 支持的数据类型
- */
 export enum MysqlDataTypes {
     // numeric types
     BIT = 'bit',
@@ -70,9 +67,6 @@ export enum MysqlDataTypes {
     INET6 = 'inet6',
 }
 
-/**
- * PostgreSQL / Aurora PostgreSQL 支持的数据类型
- */
 export enum PostgresDataTypes {
     INT = 'int',
     INT2 = 'int2',
@@ -151,9 +145,6 @@ export enum PostgresDataTypes {
     HALFVEC = 'halfvec',
 }
 
-/**
- * SQL Server 支持的数据类型
- */
 export enum SqlServerDataTypes {
     INT = 'int',
     BIGINT = 'bigint',
@@ -192,9 +183,6 @@ export enum SqlServerDataTypes {
     VECTOR = 'vector',
 }
 
-/**
- * Oracle 支持的数据类型
- */
 export enum OracleDataTypes {
     CHAR = 'char',
     NCHAR = 'nchar',
@@ -229,9 +217,6 @@ export enum OracleDataTypes {
     JSON = 'json',
 }
 
-/**
- * CockroachDB 支持的数据类型
- */
 export enum CockroachDataTypes {
     ARRAY = 'array',
     BOOL = 'bool',
@@ -279,9 +264,6 @@ export enum CockroachDataTypes {
     UUID = 'uuid',
 }
 
-/**
- * SAP HANA 支持的数据类型
- */
 export enum SapDataTypes {
     ALPHANUM = 'alphanum', // removed in SAP HANA Cloud
     ARRAY = 'array',
@@ -318,9 +300,6 @@ export enum SapDataTypes {
     VARCHAR = 'varchar', // in SAP HANA Cloud: alias for "nvarchar"
 }
 
-/**
- * Spanner 支持的数据类型
- */
 export enum SpannerDataTypes {
     BOOL = 'bool',
     INT64 = 'int64',
@@ -334,9 +313,6 @@ export enum SpannerDataTypes {
     ARRAY = 'array',
 }
 
-/**
- * SQLite (包括 Better-SQLite3, React Native, SQL.js 等) 支持的数据类型
- */
 export enum SqliteDataTypes {
     INT = 'int',
     INTEGER = 'integer',
@@ -369,9 +345,6 @@ export enum SqliteDataTypes {
     JSON = 'json', // only supported in some SQLite drivers
 }
 
-/**
- * 所有数据库数据类型的联合类型
- */
 export type AllDataTypes =
     | MysqlDataTypes
     | PostgresDataTypes
@@ -382,9 +355,6 @@ export type AllDataTypes =
     | SpannerDataTypes
     | SqliteDataTypes;
 
-/**
- * 数据库类型到数据类型枚举的映射
- */
 export const DatabaseDataTypesMap = {
     mysql: MysqlDataTypes,
     'aurora-mysql': MysqlDataTypes,

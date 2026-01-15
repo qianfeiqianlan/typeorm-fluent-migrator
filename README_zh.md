@@ -2,7 +2,7 @@
   <img src="logo.png" alt="typeorm-fluent-migrator logo" width="200">
   
   # typeorm-fluent-migrator
-  
+
   ### The most elegant way to write migrations for TypeORM
   
   > 一个流畅、类型安全的 TypeORM 迁移封装库，消除样板代码，让数据库迁移像英文句子一样易读。
@@ -48,18 +48,15 @@ export class CreateUsersTable1623456789000 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .create.table('users')
-            .column('id')
-            .int.primary.autoIncrement.column('name')
-            .varchar(255)
-            .notNull.column('email')
-            .varchar(255)
-            .unique.notNull.column('age')
-            .int.nullable.execute();
-    }
+            .column('id').int.primary.autoIncrement
+            .column('name').varchar(255).notNull
+            .column('email').varchar(255).unique.notNull
+            .column('age').int.nullable.execute();
+  }
 
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner).drop.table('users');
-    }
+  }
 }
 ```
 
@@ -70,23 +67,17 @@ export class AddPhoneColumn1623456790000 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .alter.table('users')
-            .addColumn('phone')
-            .varchar(20)
-            .nullable.dropColumn('oldStatus')
-            .alterColumn('name')
-            .varchar(100)
-            .notNull.execute();
+            .addColumn('phone').varchar(20).nullable
+            .dropColumn('oldStatus')
+            .alterColumn('name').varchar(100).notNull.execute();
     }
 
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .alter.table('users')
             .dropColumn('phone')
-            .addColumn('oldStatus')
-            .varchar(50)
-            .nullable.alterColumn('name')
-            .varchar(255)
-            .notNull.execute();
+            .addColumn('oldStatus').varchar(50).nullable
+            .alterColumn('name').varchar(255).notNull.execute();
     }
 }
 ```
@@ -98,20 +89,16 @@ export class CreatePostsTable1623456791000 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .create.table('posts')
-            .column('id')
-            .int.primary.autoIncrement.column('title')
-            .varchar(100)
-            .notNull.column('content')
-            .text.nullable.column('authorId')
-            .int.notNull.references('users', 'id')
-            .onDelete('CASCADE')
-            .onUpdate('RESTRICT')
+            .column('id').int.primary.autoIncrement
+            .column('title').varchar(100).notNull
+            .column('content').text.nullable
+            .column('authorId').int.notNull.references('users', 'id').onDelete('CASCADE').onUpdate('RESTRICT')
             .execute();
-    }
+  }
 
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner).drop.table('posts');
-    }
+  }
 }
 ```
 
@@ -126,13 +113,13 @@ export class CreateIndexes1623456792000 implements MigrationInterface {
             .create.index('idx_posts_author_status')
             .on('posts')
             .columns('authorId', 'status')
-            .execute();
-    }
+      .execute();
+  }
 
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner).drop.index('users', 'idx_users_email');
         await FL.use(queryRunner).drop.index('posts', 'idx_posts_author_status');
-    }
+  }
 }
 ```
 
@@ -292,10 +279,8 @@ await queryRunner.createTable(
 ```typescript
 await FL.use(queryRunner)
     .create.table('users')
-    .column('id')
-    .int.primary.autoIncrement.column('name')
-    .varchar(255)
-    .notNull.execute();
+    .column('id').int.primary.autoIncrement
+    .column('name').varchar(255).notNull.execute();
 ```
 
 ## 🗺️ 路线图
@@ -346,6 +331,9 @@ npm run build
 
 # 格式化代码
 npm run format
+
+# 生成 API 文档
+npm run docs
 
 # 拼写检查
 npm run spellcheck

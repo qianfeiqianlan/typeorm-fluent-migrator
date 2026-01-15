@@ -48,13 +48,10 @@ export class CreateUsersTable1623456789000 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .create.table('users')
-            .column('id')
-            .int.primary.autoIncrement.column('name')
-            .varchar(255)
-            .notNull.column('email')
-            .varchar(255)
-            .unique.notNull.column('age')
-            .int.nullable.execute();
+            .column('id').int.primary.autoIncrement
+            .column('name').varchar(255).notNull
+            .column('email').varchar(255).unique.notNull
+            .column('age').int.nullable.execute();
     }
 
     async down(queryRunner: QueryRunner): Promise<void> {
@@ -70,23 +67,17 @@ export class AddPhoneColumn1623456790000 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .alter.table('users')
-            .addColumn('phone')
-            .varchar(20)
-            .nullable.dropColumn('oldStatus')
-            .alterColumn('name')
-            .varchar(100)
-            .notNull.execute();
+            .addColumn('phone').varchar(20).nullable
+            .dropColumn('oldStatus')
+            .alterColumn('name').varchar(100).notNull.execute();
     }
 
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .alter.table('users')
             .dropColumn('phone')
-            .addColumn('oldStatus')
-            .varchar(50)
-            .nullable.alterColumn('name')
-            .varchar(255)
-            .notNull.execute();
+            .addColumn('oldStatus').varchar(50).nullable
+            .alterColumn('name').varchar(255).notNull.execute();
     }
 }
 ```
@@ -98,20 +89,16 @@ export class CreatePostsTable1623456791000 implements MigrationInterface {
     async up(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner)
             .create.table('posts')
-            .column('id')
-            .int.primary.autoIncrement.column('title')
-            .varchar(100)
-            .notNull.column('content')
-            .text.nullable.column('authorId')
-            .int.notNull.references('users', 'id')
-            .onDelete('CASCADE')
-            .onUpdate('RESTRICT')
+            .column('id').int.primary.autoIncrement
+            .column('title').varchar(100).notNull
+            .column('content').text.nullable
+            .column('authorId').int.notNull.references('users', 'id').onDelete('CASCADE').onUpdate('RESTRICT')
             .execute();
-    }
+  }
 
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner).drop.table('posts');
-    }
+  }
 }
 ```
 
@@ -132,7 +119,7 @@ export class CreateIndexes1623456792000 implements MigrationInterface {
     async down(queryRunner: QueryRunner): Promise<void> {
         await FL.use(queryRunner).drop.index('users', 'idx_users_email');
         await FL.use(queryRunner).drop.index('posts', 'idx_posts_author_status');
-    }
+  }
 }
 ```
 
@@ -292,10 +279,8 @@ await queryRunner.createTable(
 ```typescript
 await FL.use(queryRunner)
     .create.table('users')
-    .column('id')
-    .int.primary.autoIncrement.column('name')
-    .varchar(255)
-    .notNull.execute();
+    .column('id').int.primary.autoIncrement
+    .column('name').varchar(255).notNull.execute();
 ```
 
 ## 🗺️ Roadmap
@@ -357,6 +342,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🔗 Links
 
+- [Documentation](https://qianfeiqianlan.github.io/typeorm-fluent-migrator/) - Full documentation site (Docusaurus)
 - [GitHub Repository](https://github.com/qianfeiqianlan/typeorm-fluent-migrator)
 - [Issue Tracker](https://github.com/qianfeiqianlan/typeorm-fluent-migrator/issues)
 - [npm Package](https://www.npmjs.com/package/typeorm-fluent-migrator)

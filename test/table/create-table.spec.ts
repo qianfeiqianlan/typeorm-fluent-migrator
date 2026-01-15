@@ -7,7 +7,6 @@ describe("FL - Create Table", () => {
   let queryRunner: any;
 
   beforeAll(async () => {
-    // 创建 SQLite 内存数据库连接
     dataSource = new DataSource({
       type: "better-sqlite3",
       database: ":memory:",
@@ -36,15 +35,12 @@ describe("FL - Create Table", () => {
       .column("age").int.nullable
       .execute();
 
-    // 验证表是否存在
     const tables = await queryRunner.getTables();
     const usersTable = tables.find((t: any) => t.name === "users");
     expect(usersTable).toBeDefined();
     expect(usersTable?.columns.length).toBe(3);
 
-    // 验证列属性
     const idColumn = usersTable?.columns.find((c: any) => c.name === "id");
-    // SQLite 会将 int 映射为 integer
     expect(idColumn?.type.toLowerCase()).toContain("int");
     expect(idColumn?.isPrimary).toBe(true);
     expect(idColumn?.isGenerated).toBe(true);
@@ -80,19 +76,16 @@ describe("FL - Create Table", () => {
 
     const isPublishedColumn = postsTable?.columns.find((c: any) => c.name === "isPublished");
     expect(isPublishedColumn?.type.toLowerCase()).toBe("boolean");
-    // SQLite 可能将 boolean default 存储为字符串或布尔值
     expect(isPublishedColumn?.default === false || isPublishedColumn?.default === "false").toBe(true);
   });
 
   it("should create a table with foreign key", async () => {
-    // 先创建被引用的表
     await FL.use(queryRunner)
       .create.table("organizations")
       .column("id").int.primary.autoIncrement
       .column("name").varchar(255).notNull
       .execute();
 
-    // 创建带外键的表
     await FL.use(queryRunner)
       .create.table("employees")
       .column("id").int.primary.autoIncrement
@@ -105,7 +98,6 @@ describe("FL - Create Table", () => {
     const employeesTable = tables.find((t: any) => t.name === "employees");
     expect(employeesTable).toBeDefined();
 
-    // 验证外键
     const foreignKeys = employeesTable?.foreignKeys || [];
     expect(foreignKeys.length).toBeGreaterThan(0);
     const fk = foreignKeys.find(
@@ -119,20 +111,16 @@ describe("FL - Create Table", () => {
   });
 
   it("should drop a table", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("temp_table")
       .column("id").int.primary
       .execute();
 
-    // 验证表存在
     let tables = await queryRunner.getTables();
     expect(tables.find((t: any) => t.name === "temp_table")).toBeDefined();
 
-    // 删除表
     await FL.use(queryRunner).drop.table("temp_table");
 
-    // 验证表已删除
     tables = await queryRunner.getTables();
     expect(tables.find((t: any) => t.name === "temp_table")).toBeUndefined();
   });
@@ -174,14 +162,12 @@ describe("FL - Create Table", () => {
     });
 
     it("should create a table with foreign key and onUpdate", async () => {
-      // 先创建被引用的表
       await FL.use(queryRunner)
         .create.table("categories")
         .column("id").int.primary.autoIncrement
         .column("name").varchar(255).notNull
         .execute();
 
-      // 创建带外键的表，使用 onUpdate
       await FL.use(queryRunner)
         .create.table("products")
         .column("id").int.primary.autoIncrement
@@ -194,7 +180,6 @@ describe("FL - Create Table", () => {
       const productsTable = tables.find((t: any) => t.name === "products");
       expect(productsTable).toBeDefined();
 
-      // 验证外键
       const foreignKeys = productsTable?.foreignKeys || [];
       expect(foreignKeys.length).toBeGreaterThan(0);
       const fk = foreignKeys.find(
@@ -208,14 +193,12 @@ describe("FL - Create Table", () => {
     });
 
     it("should create a table with foreign key using both onDelete and onUpdate", async () => {
-      // 先创建被引用的表
       await FL.use(queryRunner)
         .create.table("departments")
         .column("id").int.primary.autoIncrement
         .column("name").varchar(255).notNull
         .execute();
 
-      // 创建带外键的表，同时使用 onDelete 和 onUpdate
       await FL.use(queryRunner)
         .create.table("employees_fk")
         .column("id").int.primary.autoIncrement
@@ -229,7 +212,6 @@ describe("FL - Create Table", () => {
       const employeesTable = tables.find((t: any) => t.name === "employees_fk");
       expect(employeesTable).toBeDefined();
 
-      // 验证外键
       const foreignKeys = employeesTable?.foreignKeys || [];
       expect(foreignKeys.length).toBeGreaterThan(0);
       const fk = foreignKeys.find(
@@ -244,14 +226,12 @@ describe("FL - Create Table", () => {
     });
 
     it("should support alterColumn chaining in alter table context", async () => {
-      // 先创建表
       await FL.use(queryRunner)
         .create.table("test_alter_chain")
         .column("id").int.primary.autoIncrement
         .column("name").varchar(50).notNull
         .execute();
 
-      // 在 alter table 中使用 addColumn 后链式调用 alterColumn
       await FL.use(queryRunner)
         .alter.table("test_alter_chain")
         .addColumn("email").varchar(255).nullable
@@ -270,7 +250,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should throw error when alterColumn is called in create table context", () => {
-      // 在 create table 上下文中，alterColumn 应该抛出错误
       const tableBuilder = FL.use(queryRunner).create.table("test_error");
       const columnBuilder = tableBuilder.column("id").int.primary.autoIncrement;
       
@@ -317,7 +296,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should support column() chaining in create table context", async () => {
-      // 测试在 create table 中，从 ColumnBuilder 调用 column() 方法
       await FL.use(queryRunner)
         .create.table("test_column_chain")
         .column("id").int.primary.autoIncrement
@@ -331,8 +309,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should support addColumn() in create table context (fallback to column)", async () => {
-      // 测试在 create table 中，从 ColumnBuilder 调用 addColumn() 方法
-      // 这应该回退到使用 column() 方法（第 150 行）
       await FL.use(queryRunner)
         .create.table("test_addcolumn_fallback")
         .column("id").int.primary.autoIncrement
@@ -346,7 +322,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should throw error when dropColumn is called in create table context", () => {
-      // 在 create table 上下文中，dropColumn 应该抛出错误（第 157 行）
       const tableBuilder = FL.use(queryRunner).create.table("test_error_drop");
       const columnBuilder = tableBuilder.column("id").int.primary.autoIncrement;
 
@@ -366,7 +341,6 @@ describe("FL - Create Table", () => {
       const table = tables.find((t: any) => t.name === "test_varchar_no_length");
       const column = table?.columns.find((c: any) => c.name === "name");
       expect(column?.type.toLowerCase()).toContain("varchar");
-      // 当不提供 length 时，SQLite 可能将其设置为空字符串或 undefined
       expect(column?.length === undefined || column?.length === "").toBe(true);
     });
 
@@ -409,7 +383,6 @@ describe("FL - Create Table", () => {
       const table = tables.find((t: any) => t.name === "test_decimal_no_params");
       const column = table?.columns.find((c: any) => c.name === "amount");
       expect(column?.type.toLowerCase()).toBe("decimal");
-      // 当不提供 precision 和 scale 时，它们应该是 undefined
       expect(column?.precision).toBeUndefined();
       expect(column?.scale).toBeUndefined();
     });
@@ -447,24 +420,20 @@ describe("FL - Create Table", () => {
 
   describe("TableBuilder - Driver type checking", () => {
     it("should handle case when driver is null", async () => {
-      // 创建一个 mock queryRunner，其中 connection 为 null
       const mockQueryRunner = {
         connection: null,
         createTable: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .create.table("test_no_driver")
         .column("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误（虽然实际上 createTable 是 mock，不会真正执行）
       expect(true).toBe(true);
     });
 
     it("should handle case when driver.options is null", async () => {
-      // 创建一个 mock queryRunner，其中 driver.options 为 null
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -474,18 +443,15 @@ describe("FL - Create Table", () => {
         createTable: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .create.table("test_no_driver_options")
         .column("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when driver.options.type is not better-sqlite3", async () => {
-      // 创建一个 mock queryRunner，其中 driver.options.type 不是 "better-sqlite3"
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -497,38 +463,31 @@ describe("FL - Create Table", () => {
         createTable: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .create.table("test_non_sqlite")
         .column("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when connection is undefined", async () => {
-      // 创建一个 mock queryRunner，其中 connection 为 undefined
       const mockQueryRunner = {
         connection: undefined,
         createTable: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .create.table("test_undefined_connection")
         .column("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
   });
 
   describe("ColumnBuilder - Conditional branches", () => {
     it("should handle onDelete when foreignKeyInfo is undefined", async () => {
-      // 测试在没有调用 references 的情况下调用 onDelete
-      // 这应该不会抛出错误，只是不会设置 onDelete
       await FL.use(queryRunner)
         .create.table("test_ondelete_no_fk")
         .column("id").int.primary.autoIncrement
@@ -536,7 +495,6 @@ describe("FL - Create Table", () => {
         .onDelete("CASCADE") // 没有先调用 references
         .execute();
 
-      // 验证表创建成功（onDelete 不会影响，因为没有外键）
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_ondelete_no_fk");
       expect(table).toBeDefined();
@@ -544,8 +502,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should handle onUpdate when foreignKeyInfo is undefined", async () => {
-      // 测试在没有调用 references 的情况下调用 onUpdate
-      // 这应该不会抛出错误，只是不会设置 onUpdate
       await FL.use(queryRunner)
         .create.table("test_onupdate_no_fk")
         .column("id").int.primary.autoIncrement
@@ -553,7 +509,6 @@ describe("FL - Create Table", () => {
         .onUpdate("CASCADE") // 没有先调用 references
         .execute();
 
-      // 验证表创建成功（onUpdate 不会影响，因为没有外键）
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_onupdate_no_fk");
       expect(table).toBeDefined();
@@ -561,8 +516,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should handle autoIncrement when type is not int", async () => {
-      // 测试 autoIncrement 在 type 不是 "int" 的情况（第 85 行的 else 分支）
-      // 由于 SQLite 不支持 bigint 的 AUTOINCREMENT，我们使用 mock 来测试代码逻辑
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -574,26 +527,22 @@ describe("FL - Create Table", () => {
         createTable: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进入 if 分支
       await FL.use(mockQueryRunner)
         .create.table("test_autoinc_bigint")
         .column("id").bigint.primary.autoIncrement
         .column("name").varchar(255).notNull
         .execute();
 
-      // 验证没有抛出错误（虽然实际上 createTable 是 mock，不会真正执行）
       expect(true).toBe(true);
     });
 
     it("should handle autoIncrement when type is int", async () => {
-      // 测试 autoIncrement 在 type 是 "int" 的情况（第 85 行的 if 分支）
       await FL.use(queryRunner)
         .create.table("test_autoinc_int")
         .column("id").int.primary.autoIncrement
         .column("name").varchar(255).notNull
         .execute();
 
-      // 验证表创建成功
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_autoinc_int");
       expect(table).toBeDefined();
@@ -605,7 +554,6 @@ describe("FL - Create Table", () => {
     });
 
     it("should handle onDelete and onUpdate when foreignKeyInfo exists", async () => {
-      // 测试在调用 references 后调用 onDelete 和 onUpdate（第 122 和 129 行的 if 分支）
       await FL.use(queryRunner)
         .create.table("test_fk_with_actions")
         .column("id").int.primary.autoIncrement
@@ -620,7 +568,6 @@ describe("FL - Create Table", () => {
         .onUpdate("RESTRICT")
         .execute();
 
-      // 验证外键已正确设置
       const tables = await queryRunner.getTables();
       const childTable = tables.find((t: any) => t.name === "test_fk_child");
       expect(childTable).toBeDefined();

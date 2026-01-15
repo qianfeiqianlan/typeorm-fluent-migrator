@@ -7,6 +7,8 @@
   
   > 一个流畅、类型安全的 TypeORM 迁移封装库，消除样板代码，让数据库迁移像英文句子一样易读。
   
+  [English](README.md) | [中文](README_zh.md)
+  
   [![Build Status](https://img.shields.io/github/actions/workflow/status/qianfeiqianlan/typeorm-fluent-migrator/ci.yml)](https://github.com/qianfeiqianlan/typeorm-fluent-migrator/actions)
   [![codecov](https://codecov.io/github/qianfeiqianlan/typeorm-fluent-migrator/graph/badge.svg?token=WD0IUH9NDP)](https://codecov.io/github/qianfeiqianlan/typeorm-fluent-migrator)
   [![NPM Version](https://img.shields.io/npm/v/typeorm-fluent-migrator.svg)](https://www.npmjs.com/package/typeorm-fluent-migrator)
@@ -39,23 +41,25 @@ npm install typeorm
 ### 创建表
 
 ```typescript
-import { MigrationInterface, QueryRunner } from "typeorm";
-import { FL } from "typeorm-fluent-migrator";
+import { MigrationInterface, QueryRunner } from 'typeorm';
+import { FL } from 'typeorm-fluent-migrator';
 
 export class CreateUsersTable1623456789000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .create.table("users")
-      .column("id").int.primary.autoIncrement
-      .column("name").varchar(255).notNull
-      .column("email").varchar(255).unique.notNull
-      .column("age").int.nullable
-      .execute();
-  }
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .create.table('users')
+            .column('id')
+            .int.primary.autoIncrement.column('name')
+            .varchar(255)
+            .notNull.column('email')
+            .varchar(255)
+            .unique.notNull.column('age')
+            .int.nullable.execute();
+    }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner).drop.table("users");
-  }
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.table('users');
+    }
 }
 ```
 
@@ -63,23 +67,27 @@ export class CreateUsersTable1623456789000 implements MigrationInterface {
 
 ```typescript
 export class AddPhoneColumn1623456790000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .alter.table("users")
-      .addColumn("phone").varchar(20).nullable
-      .dropColumn("oldStatus")
-      .alterColumn("name").varchar(100).notNull
-      .execute();
-  }
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .alter.table('users')
+            .addColumn('phone')
+            .varchar(20)
+            .nullable.dropColumn('oldStatus')
+            .alterColumn('name')
+            .varchar(100)
+            .notNull.execute();
+    }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .alter.table("users")
-      .dropColumn("phone")
-      .addColumn("oldStatus").varchar(50).nullable
-      .alterColumn("name").varchar(255).notNull
-      .execute();
-  }
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .alter.table('users')
+            .dropColumn('phone')
+            .addColumn('oldStatus')
+            .varchar(50)
+            .nullable.alterColumn('name')
+            .varchar(255)
+            .notNull.execute();
+    }
 }
 ```
 
@@ -87,22 +95,44 @@ export class AddPhoneColumn1623456790000 implements MigrationInterface {
 
 ```typescript
 export class CreatePostsTable1623456791000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .create.table("posts")
-      .column("id").int.primary.autoIncrement
-      .column("title").varchar(100).notNull
-      .column("content").text.nullable
-      .column("authorId").int.notNull
-        .references("users", "id")
-        .onDelete("CASCADE")
-        .onUpdate("RESTRICT")
-      .execute();
-  }
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .create.table('posts')
+            .column('id')
+            .int.primary.autoIncrement.column('title')
+            .varchar(100)
+            .notNull.column('content')
+            .text.nullable.column('authorId')
+            .int.notNull.references('users', 'id')
+            .onDelete('CASCADE')
+            .onUpdate('RESTRICT')
+            .execute();
+    }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner).drop.table("posts");
-  }
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.table('posts');
+    }
+}
+```
+
+### 索引
+
+```typescript
+export class CreateIndexes1623456792000 implements MigrationInterface {
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).create.index('idx_users_email').on('users').column('email').unique.execute();
+
+        await FL.use(queryRunner)
+            .create.index('idx_posts_author_status')
+            .on('posts')
+            .columns('authorId', 'status')
+            .execute();
+    }
+
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.index('users', 'idx_users_email');
+        await FL.use(queryRunner).drop.index('posts', 'idx_posts_author_status');
+    }
 }
 ```
 
@@ -146,50 +176,87 @@ export class CreatePostsTable1623456791000 implements MigrationInterface {
 - `.dropColumn(name)` - 删除列
 - `.alterColumn(name)` - 修改现有列
 
+### 索引操作
+
+- `FL.use(queryRunner).create.index(name)` - 创建索引
+    - `.on(tableName)` - 指定表名
+    - `.column(columnName)` - 添加单个列到索引
+    - `.columns(...columnNames)` - 添加多个列到索引（复合索引）
+    - `.unique` - 设置为唯一索引
+    - `.execute()` - 执行索引创建
+- `FL.use(queryRunner).drop.index(tableName, indexName)` - 删除索引
+
+### 链式方法
+
+在处理列时，可以链式调用操作：
+
+**在创建表上下文中：**
+
+- `.column(name)` - 创建新列
+- `.addColumn(name)` - `.column(name)` 的别名（为保持一致性）
+
+**在修改表上下文中：**
+
+- `.addColumn(name)` - 添加新列
+- `.dropColumn(name)` - 删除列
+- `.alterColumn(name)` - 修改现有列
+- `.column(name)` - `.addColumn(name)` 的别名（为保持一致性）
+
+**从 ColumnBuilder/AlterColumnBuilder：**
+
+- `.column(name)` - 链式调用以创建/添加另一个列
+- `.addColumn(name)` - 链式调用以添加另一个列
+- `.dropColumn(name)` - 链式调用以删除列（仅在修改表上下文中）
+- `.alterColumn(name)` - 链式调用以修改列（仅在修改表上下文中）
+- `.execute()` - 执行所有待处理的操作
+
 ## 🎯 对比
 
-| 维度 | 原生 TypeORM | typeorm-fluent-migrator |
-|------|-------------|------------------------|
-| **代码量** | 冗长，需手动 `new Table()` | 精简，减少 50-70% |
-| **可读性** | 嵌套深，属性分散 | 线性，像读英文句子 |
-| **类型安全** | 可能运行时错误 | 编译期检查 |
-| **IDE 支持** | 有限的自动补全 | 完整的 IntelliSense |
-| **可维护性** | 高认知负担 | 低，结构清晰 |
+| 维度         | 原生 TypeORM               | typeorm-fluent-migrator |
+| ------------ | -------------------------- | ----------------------- |
+| **代码量**   | 冗长，需手动 `new Table()` | 精简，减少 50-70%       |
+| **可读性**   | 嵌套深，属性分散           | 线性，像读英文句子      |
+| **类型安全** | 可能运行时错误             | 编译期检查              |
+| **IDE 支持** | 有限的自动补全             | 完整的 IntelliSense     |
+| **可维护性** | 高认知负担                 | 低，结构清晰            |
 
 ### 示例对比
 
 **原生 TypeORM:**
+
 ```typescript
 await queryRunner.createTable(
-  new Table({
-    name: "users",
-    columns: [
-      {
-        name: "id",
-        type: "int",
-        isPrimary: true,
-        isGenerated: true,
-        generationStrategy: "increment",
-      },
-      {
-        name: "name",
-        type: "varchar",
-        length: "255",
-        isNullable: false,
-      },
-    ],
-  }),
-  true
+    new Table({
+        name: 'users',
+        columns: [
+            {
+                name: 'id',
+                type: 'int',
+                isPrimary: true,
+                isGenerated: true,
+                generationStrategy: 'increment',
+            },
+            {
+                name: 'name',
+                type: 'varchar',
+                length: '255',
+                isNullable: false,
+            },
+        ],
+    }),
+    true
 );
 ```
 
 **typeorm-fluent-migrator:**
+
 ```typescript
 await FL.use(queryRunner)
-  .create.table("users")
-  .column("id").int.primary.autoIncrement
-  .column("name").varchar(255).notNull
-  .execute();
+    .create.table('users')
+    .column('id')
+    .int.primary.autoIncrement.column('name')
+    .varchar(255)
+    .notNull.execute();
 ```
 
 ## 🗺️ 路线图
@@ -200,12 +267,14 @@ await FL.use(queryRunner)
 - ✅ `create.table()` 支持所有列类型
 - ✅ `alter.table()` 支持 `addColumn`、`dropColumn`、`alterColumn`
 - ✅ 外键支持 `references()`、`onDelete()`、`onUpdate()`
+- ✅ 索引支持 `create.index()` 和 `drop.index()`
+- ✅ `alter.table()` 支持 `addColumn`、`dropColumn`、`alterColumn`
+- ✅ 外键支持 `references()`、`onDelete()`、`onUpdate()`
 - ✅ 完整的 TypeScript 类型安全
 - ✅ SQLite 兼容性，自动类型转换
 
 ### 🚧 即将推出
 
-- 🔲 **索引支持** - 快速创建索引：`.index('idx_name')`
 - 🔲 **重命名列** - `.renameColumn('old', 'new')`
 - 🔲 **自动 Down 逻辑** - 根据 `up()` 操作自动生成 `down()` 方法
 - 🔲 **枚举支持** - 为支持枚举的数据库提供原生支持

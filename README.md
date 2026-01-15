@@ -7,6 +7,8 @@
   
   > A fluent, type-safe migration wrapper that eliminates boilerplate code and makes database migrations as readable as English sentences.
   
+  [English](README.md) | [中文](README_zh.md)
+  
   [![Build Status](https://img.shields.io/github/actions/workflow/status/qianfeiqianlan/typeorm-fluent-migrator/ci.yml)](https://github.com/qianfeiqianlan/typeorm-fluent-migrator/actions)
   [![codecov](https://codecov.io/github/qianfeiqianlan/typeorm-fluent-migrator/graph/badge.svg?token=WD0IUH9NDP)](https://codecov.io/github/qianfeiqianlan/typeorm-fluent-migrator)
   [![NPM Version](https://img.shields.io/npm/v/typeorm-fluent-migrator.svg)](https://www.npmjs.com/package/typeorm-fluent-migrator)
@@ -39,23 +41,25 @@ npm install typeorm
 ### Create a Table
 
 ```typescript
-import { MigrationInterface, QueryRunner } from "typeorm";
-import { FL } from "typeorm-fluent-migrator";
+import { MigrationInterface, QueryRunner } from 'typeorm';
+import { FL } from 'typeorm-fluent-migrator';
 
 export class CreateUsersTable1623456789000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .create.table("users")
-      .column("id").int.primary.autoIncrement
-      .column("name").varchar(255).notNull
-      .column("email").varchar(255).unique.notNull
-      .column("age").int.nullable
-      .execute();
-  }
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .create.table('users')
+            .column('id')
+            .int.primary.autoIncrement.column('name')
+            .varchar(255)
+            .notNull.column('email')
+            .varchar(255)
+            .unique.notNull.column('age')
+            .int.nullable.execute();
+    }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner).drop.table("users");
-  }
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.table('users');
+    }
 }
 ```
 
@@ -63,23 +67,27 @@ export class CreateUsersTable1623456789000 implements MigrationInterface {
 
 ```typescript
 export class AddPhoneColumn1623456790000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .alter.table("users")
-      .addColumn("phone").varchar(20).nullable
-      .dropColumn("oldStatus")
-      .alterColumn("name").varchar(100).notNull
-      .execute();
-  }
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .alter.table('users')
+            .addColumn('phone')
+            .varchar(20)
+            .nullable.dropColumn('oldStatus')
+            .alterColumn('name')
+            .varchar(100)
+            .notNull.execute();
+    }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .alter.table("users")
-      .dropColumn("phone")
-      .addColumn("oldStatus").varchar(50).nullable
-      .alterColumn("name").varchar(255).notNull
-      .execute();
-  }
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .alter.table('users')
+            .dropColumn('phone')
+            .addColumn('oldStatus')
+            .varchar(50)
+            .nullable.alterColumn('name')
+            .varchar(255)
+            .notNull.execute();
+    }
 }
 ```
 
@@ -87,22 +95,44 @@ export class AddPhoneColumn1623456790000 implements MigrationInterface {
 
 ```typescript
 export class CreatePostsTable1623456791000 implements MigrationInterface {
-  async up(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner)
-      .create.table("posts")
-      .column("id").int.primary.autoIncrement
-      .column("title").varchar(100).notNull
-      .column("content").text.nullable
-      .column("authorId").int.notNull
-        .references("users", "id")
-        .onDelete("CASCADE")
-        .onUpdate("RESTRICT")
-      .execute();
-  }
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .create.table('posts')
+            .column('id')
+            .int.primary.autoIncrement.column('title')
+            .varchar(100)
+            .notNull.column('content')
+            .text.nullable.column('authorId')
+            .int.notNull.references('users', 'id')
+            .onDelete('CASCADE')
+            .onUpdate('RESTRICT')
+            .execute();
+    }
 
-  async down(queryRunner: QueryRunner): Promise<void> {
-    await FL.use(queryRunner).drop.table("posts");
-  }
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.table('posts');
+    }
+}
+```
+
+### Indexes
+
+```typescript
+export class CreateIndexes1623456792000 implements MigrationInterface {
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).create.index('idx_users_email').on('users').column('email').unique.execute();
+
+        await FL.use(queryRunner)
+            .create.index('idx_posts_author_status')
+            .on('posts')
+            .columns('authorId', 'status')
+            .execute();
+    }
+
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.index('users', 'idx_users_email');
+        await FL.use(queryRunner).drop.index('posts', 'idx_posts_author_status');
+    }
 }
 ```
 
@@ -146,50 +176,87 @@ export class CreatePostsTable1623456791000 implements MigrationInterface {
 - `.dropColumn(name)` - Drop a column
 - `.alterColumn(name)` - Modify an existing column
 
+### Index Operations
+
+- `FL.use(queryRunner).create.index(name)` - Create an index
+    - `.on(tableName)` - Specify the table name
+    - `.column(columnName)` - Add a single column to the index
+    - `.columns(...columnNames)` - Add multiple columns to the index (composite index)
+    - `.unique` - Make the index unique
+    - `.execute()` - Execute the index creation
+- `FL.use(queryRunner).drop.index(tableName, indexName)` - Drop an index
+
+### Chaining Methods
+
+When working with columns, you can chain operations:
+
+**In Create Table Context:**
+
+- `.column(name)` - Create a new column
+- `.addColumn(name)` - Alias for `.column(name)` (for consistency)
+
+**In Alter Table Context:**
+
+- `.addColumn(name)` - Add a new column
+- `.dropColumn(name)` - Drop a column
+- `.alterColumn(name)` - Modify an existing column
+- `.column(name)` - Alias for `.addColumn(name)` (for consistency)
+
+**From ColumnBuilder/AlterColumnBuilder:**
+
+- `.column(name)` - Chain to create/add another column
+- `.addColumn(name)` - Chain to add another column
+- `.dropColumn(name)` - Chain to drop a column (only in alter context)
+- `.alterColumn(name)` - Chain to alter a column (only in alter context)
+- `.execute()` - Execute all pending operations
+
 ## 🎯 Comparison
 
-| Aspect | Native TypeORM | typeorm-fluent-migrator |
-|--------|----------------|------------------------|
-| **Code Length** | Verbose, manual `new Table()` | Concise, 50-70% reduction |
-| **Readability** | Deep nesting, scattered properties | Linear, reads like English |
-| **Type Safety** | Runtime errors possible | Compile-time checks |
-| **IDE Support** | Limited autocomplete | Full IntelliSense |
-| **Maintainability** | High cognitive load | Low, structured clearly |
+| Aspect              | Native TypeORM                     | typeorm-fluent-migrator    |
+| ------------------- | ---------------------------------- | -------------------------- |
+| **Code Length**     | Verbose, manual `new Table()`      | Concise, 50-70% reduction  |
+| **Readability**     | Deep nesting, scattered properties | Linear, reads like English |
+| **Type Safety**     | Runtime errors possible            | Compile-time checks        |
+| **IDE Support**     | Limited autocomplete               | Full IntelliSense          |
+| **Maintainability** | High cognitive load                | Low, structured clearly    |
 
 ### Example Comparison
 
 **Native TypeORM:**
+
 ```typescript
 await queryRunner.createTable(
-  new Table({
-    name: "users",
-    columns: [
-      {
-        name: "id",
-        type: "int",
-        isPrimary: true,
-        isGenerated: true,
-        generationStrategy: "increment",
-      },
-      {
-        name: "name",
-        type: "varchar",
-        length: "255",
-        isNullable: false,
-      },
-    ],
-  }),
-  true
+    new Table({
+        name: 'users',
+        columns: [
+            {
+                name: 'id',
+                type: 'int',
+                isPrimary: true,
+                isGenerated: true,
+                generationStrategy: 'increment',
+            },
+            {
+                name: 'name',
+                type: 'varchar',
+                length: '255',
+                isNullable: false,
+            },
+        ],
+    }),
+    true
 );
 ```
 
 **typeorm-fluent-migrator:**
+
 ```typescript
 await FL.use(queryRunner)
-  .create.table("users")
-  .column("id").int.primary.autoIncrement
-  .column("name").varchar(255).notNull
-  .execute();
+    .create.table('users')
+    .column('id')
+    .int.primary.autoIncrement.column('name')
+    .varchar(255)
+    .notNull.execute();
 ```
 
 ## 🗺️ Roadmap
@@ -200,12 +267,12 @@ await FL.use(queryRunner)
 - ✅ `create.table()` with all column types
 - ✅ `alter.table()` with `addColumn`, `dropColumn`, `alterColumn`
 - ✅ Foreign key support with `references()`, `onDelete()`, `onUpdate()`
+- ✅ Index support with `create.index()` and `drop.index()`
 - ✅ Full TypeScript type safety
 - ✅ SQLite compatibility with automatic type conversion
 
 ### 🚧 Coming Soon
 
-- 🔲 **Index Support** - Quick index creation: `.index('idx_name')`
 - 🔲 **Rename Column** - `.renameColumn('old', 'new')`
 - 🔲 **Auto Down Logic** - Automatic generation of `down()` from `up()` operations
 - 🔲 **Enum Support** - Native enum support for databases that support it

@@ -7,7 +7,6 @@ describe("FL - Alter Table", () => {
   let queryRunner: any;
 
   beforeAll(async () => {
-    // 创建 SQLite 内存数据库连接
     dataSource = new DataSource({
       type: "better-sqlite3",
       database: ":memory:",
@@ -29,20 +28,17 @@ describe("FL - Alter Table", () => {
   });
 
   it("should add a column to existing table", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("users")
       .column("id").int.primary.autoIncrement
       .column("name").varchar(255).notNull
       .execute();
 
-    // 添加新列
     await FL.use(queryRunner)
       .alter.table("users")
       .addColumn("email").varchar(255).nullable
       .execute();
 
-    // 验证列已添加
     const tables = await queryRunner.getTables();
     const usersTable = tables.find((t: any) => t.name === "users");
     expect(usersTable).toBeDefined();
@@ -55,14 +51,12 @@ describe("FL - Alter Table", () => {
   });
 
   it("should add multiple columns to existing table", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("posts")
       .column("id").int.primary.autoIncrement
       .column("title").varchar(100).notNull
       .execute();
 
-    // 添加多个列
     await FL.use(queryRunner)
       .alter.table("posts")
       .addColumn("content").text.nullable
@@ -70,7 +64,6 @@ describe("FL - Alter Table", () => {
       .addColumn("createdAt").datetime.default("CURRENT_TIMESTAMP")
       .execute();
 
-    // 验证列已添加
     const tables = await queryRunner.getTables();
     const postsTable = tables.find((t: any) => t.name === "posts");
     expect(postsTable).toBeDefined();
@@ -86,7 +79,6 @@ describe("FL - Alter Table", () => {
   });
 
   it("should drop a column from existing table", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("products")
       .column("id").int.primary.autoIncrement
@@ -94,18 +86,15 @@ describe("FL - Alter Table", () => {
       .column("oldStatus").varchar(50).nullable
       .execute();
 
-    // 验证列存在
     let tables = await queryRunner.getTables();
     let productsTable = tables.find((t: any) => t.name === "products");
     expect(productsTable?.columns.find((c: any) => c.name === "oldStatus")).toBeDefined();
 
-    // 删除列
     await FL.use(queryRunner)
       .alter.table("products")
       .dropColumn("oldStatus")
       .execute();
 
-    // 验证列已删除
     tables = await queryRunner.getTables();
     productsTable = tables.find((t: any) => t.name === "products");
     expect(productsTable?.columns.find((c: any) => c.name === "oldStatus")).toBeUndefined();
@@ -113,27 +102,23 @@ describe("FL - Alter Table", () => {
   });
 
   it("should alter a column in existing table", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("customers")
       .column("id").int.primary.autoIncrement
       .column("name").varchar(50).notNull
       .execute();
 
-    // 验证原始列属性
     let tables = await queryRunner.getTables();
     let customersTable = tables.find((t: any) => t.name === "customers");
     let nameColumn = customersTable?.columns.find((c: any) => c.name === "name");
     expect(nameColumn?.length).toBe("50");
     expect(nameColumn?.isNullable).toBe(false);
 
-    // 修改列：增加长度并允许为空
     await FL.use(queryRunner)
       .alter.table("customers")
       .alterColumn("name").varchar(255).nullable
       .execute();
 
-    // 验证列已修改
     tables = await queryRunner.getTables();
     customersTable = tables.find((t: any) => t.name === "customers");
     nameColumn = customersTable?.columns.find((c: any) => c.name === "name");
@@ -142,7 +127,6 @@ describe("FL - Alter Table", () => {
   });
 
   it("should combine addColumn, dropColumn, and alterColumn in one operation", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("orders")
       .column("id").int.primary.autoIncrement
@@ -150,7 +134,6 @@ describe("FL - Alter Table", () => {
       .column("oldStatus").varchar(20).nullable
       .execute();
 
-    // 执行多个操作：添加列、删除列、修改列
     await FL.use(queryRunner)
       .alter.table("orders")
       .addColumn("total").decimal(10, 2).nullable
@@ -158,34 +141,28 @@ describe("FL - Alter Table", () => {
       .alterColumn("orderNo").varchar(100).notNull
       .execute();
 
-    // 验证结果
     const tables = await queryRunner.getTables();
     const ordersTable = tables.find((t: any) => t.name === "orders");
     expect(ordersTable).toBeDefined();
     expect(ordersTable?.columns.length).toBe(3); // id, orderNo, total
 
-    // 验证新列已添加
     const totalColumn = ordersTable?.columns.find((c: any) => c.name === "total");
     expect(totalColumn).toBeDefined();
     expect(totalColumn?.type.toLowerCase()).toBe("decimal");
 
-    // 验证旧列已删除
     expect(ordersTable?.columns.find((c: any) => c.name === "oldStatus")).toBeUndefined();
 
-    // 验证列已修改
     const orderNoColumn = ordersTable?.columns.find((c: any) => c.name === "orderNo");
     expect(orderNoColumn?.length).toBe("100");
   });
 
   it("should support chaining operations", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("items")
       .column("id").int.primary.autoIncrement
       .column("name").varchar(100).notNull
       .execute();
 
-    // 链式调用：添加列后继续添加列
     await FL.use(queryRunner)
       .alter.table("items")
       .addColumn("price").decimal(10, 2).nullable
@@ -193,7 +170,6 @@ describe("FL - Alter Table", () => {
       .dropColumn("name")
       .execute();
 
-    // 验证结果
     const tables = await queryRunner.getTables();
     const itemsTable = tables.find((t: any) => t.name === "items");
     expect(itemsTable?.columns.length).toBe(3); // id, price, description
@@ -203,14 +179,12 @@ describe("FL - Alter Table", () => {
   });
 
   it("should support more alterColumn types", async () => {
-    // 先创建表
     await FL.use(queryRunner)
       .create.table("products")
       .column("id").int.primary.autoIncrement
       .column("name").varchar(50).notNull
       .execute();
 
-    // 测试更多 alterColumn 类型和 addColumn 类型
     await FL.use(queryRunner)
       .alter.table("products")
       .alterColumn("name").varchar(255).notNull
@@ -220,7 +194,6 @@ describe("FL - Alter Table", () => {
       .addColumn("price").bigint.nullable
       .execute();
 
-    // 验证结果
     const tables = await queryRunner.getTables();
     const productsTable = tables.find((t: any) => t.name === "products");
     expect(productsTable?.columns.length).toBe(6);
@@ -380,7 +353,6 @@ describe("FL - Alter Table", () => {
       const table = tables.find((t: any) => t.name === "test_decimal_no_params");
       const column = table?.columns.find((c: any) => c.name === "amount");
       expect(column?.type.toLowerCase()).toBe("decimal");
-      // 当不提供 precision 和 scale 时，它们应该是 undefined
       expect(column?.precision).toBeUndefined();
       expect(column?.scale).toBeUndefined();
     });
@@ -421,7 +393,6 @@ describe("FL - Alter Table", () => {
       const table = tables.find((t: any) => t.name === "test_varchar_no_length");
       const column = table?.columns.find((c: any) => c.name === "name");
       expect(column?.type.toLowerCase()).toContain("varchar");
-      // 当不提供 length 时，SQLite 可能将其设置为空字符串或 undefined
       expect(column?.length === undefined || column?.length === "").toBe(true);
     });
 
@@ -466,7 +437,6 @@ describe("FL - Alter Table", () => {
 
   describe("AlterColumnBuilder - Constraint Methods", () => {
     it("should alter column with primary constraint", async () => {
-      // SQLite 不支持复合主键，所以创建一个没有主键的表
       await FL.use(queryRunner)
         .create.table("test_primary")
         .column("id").int.nullable
@@ -485,7 +455,6 @@ describe("FL - Alter Table", () => {
     });
 
     it("should alter column with autoIncrement", async () => {
-      // SQLite 不支持复合主键的 AUTOINCREMENT，所以创建一个没有主键的表
       await FL.use(queryRunner)
         .create.table("test_autoinc")
         .column("id").int.nullable
@@ -593,8 +562,6 @@ describe("FL - Alter Table", () => {
     });
 
     it("should support column() chaining in alter table context (fallback to addColumn)", async () => {
-      // 测试在 alter table 中，从 ColumnBuilder 调用 column() 方法
-      // 这应该回退到使用 addColumn() 方法（第 141 行）
       await FL.use(queryRunner)
         .create.table("test_column_in_alter")
         .column("id").int.primary.autoIncrement
@@ -618,26 +585,21 @@ describe("FL - Alter Table", () => {
 
   describe("AlterTableBuilder - SQLite int to integer conversion", () => {
     it("should convert int to integer when altering column with primary and autoIncrement", async () => {
-      // 创建一个没有主键的表
       await FL.use(queryRunner)
         .create.table("test_sqlite_int_conversion")
         .column("id").int.nullable
         .column("name").varchar(255).notNull
         .execute();
 
-      // 通过 alterColumn 修改列为 int.primary.autoIncrement
-      // 这应该触发 SQLite 的特殊处理，将 int 转换为 integer
       await FL.use(queryRunner)
         .alter.table("test_sqlite_int_conversion")
         .alterColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证列类型已被转换为 integer（SQLite 要求）
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_sqlite_int_conversion");
       const idColumn = table?.columns.find((c: any) => c.name === "id");
       
-      // SQLite 会将类型存储为 integer
       expect(idColumn?.type.toLowerCase()).toContain("int");
       expect(idColumn?.isPrimary).toBe(true);
       expect(idColumn?.isGenerated).toBe(true);
@@ -645,25 +607,20 @@ describe("FL - Alter Table", () => {
     });
 
     it("should convert int to integer when adding column with primary and autoIncrement", async () => {
-      // 创建一个表
       await FL.use(queryRunner)
         .create.table("test_sqlite_add_int_conversion")
         .column("name").varchar(255).notNull
         .execute();
 
-      // 通过 addColumn 添加 int.primary.autoIncrement 列
-      // 这应该触发 SQLite 的特殊处理，将 int 转换为 integer
       await FL.use(queryRunner)
         .alter.table("test_sqlite_add_int_conversion")
         .addColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证列类型已被转换为 integer（SQLite 要求）
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_sqlite_add_int_conversion");
       const idColumn = table?.columns.find((c: any) => c.name === "id");
       
-      // SQLite 会将类型存储为 integer
       expect(idColumn?.type.toLowerCase()).toContain("int");
       expect(idColumn?.isPrimary).toBe(true);
       expect(idColumn?.isGenerated).toBe(true);
@@ -671,20 +628,17 @@ describe("FL - Alter Table", () => {
     });
 
     it("should not convert int to integer when column is not primary and autoIncrement", async () => {
-      // 创建一个表
       await FL.use(queryRunner)
         .create.table("test_sqlite_no_conversion")
         .column("id").int.primary.autoIncrement
         .column("value").varchar(50).nullable
         .execute();
 
-      // 修改列为 int 类型，但不是主键和自增
       await FL.use(queryRunner)
         .alter.table("test_sqlite_no_conversion")
         .alterColumn("value").int.nullable
         .execute();
 
-      // 验证列类型保持为 int（不需要转换为 integer）
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_sqlite_no_conversion");
       const valueColumn = table?.columns.find((c: any) => c.name === "value");
@@ -695,19 +649,16 @@ describe("FL - Alter Table", () => {
     });
 
     it("should not convert int to integer when column is primary but not autoIncrement", async () => {
-      // 创建一个没有主键的表
       await FL.use(queryRunner)
         .create.table("test_sqlite_primary_only")
         .column("code").varchar(50).nullable
         .execute();
 
-      // 修改列为 int.primary，但不是 autoIncrement
       await FL.use(queryRunner)
         .alter.table("test_sqlite_primary_only")
         .alterColumn("code").int.primary.notNull
         .execute();
 
-      // 验证列类型（虽然这种情况在实际使用中较少见）
       const tables = await queryRunner.getTables();
       const table = tables.find((t: any) => t.name === "test_sqlite_primary_only");
       const codeColumn = table?.columns.find((c: any) => c.name === "code");
@@ -720,24 +671,20 @@ describe("FL - Alter Table", () => {
 
   describe("AlterTableBuilder - Driver type checking", () => {
     it("should handle case when driver is null in addColumn", async () => {
-      // 创建一个 mock queryRunner，其中 connection 为 null
       const mockQueryRunner = {
         connection: null,
         addColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .addColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when driver.options is null in addColumn", async () => {
-      // 创建一个 mock queryRunner，其中 driver.options 为 null
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -747,18 +694,15 @@ describe("FL - Alter Table", () => {
         addColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .addColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when driver.options.type is not better-sqlite3 in addColumn", async () => {
-      // 创建一个 mock queryRunner，其中 driver.options.type 不是 "better-sqlite3"
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -770,35 +714,29 @@ describe("FL - Alter Table", () => {
         addColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .addColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when driver is null in alterColumn", async () => {
-      // 创建一个 mock queryRunner，其中 connection 为 null
       const mockQueryRunner = {
         connection: null,
         changeColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .alterColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when driver.options is null in alterColumn", async () => {
-      // 创建一个 mock queryRunner，其中 driver.options 为 null
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -808,18 +746,15 @@ describe("FL - Alter Table", () => {
         changeColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .alterColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when driver.options.type is not better-sqlite3 in alterColumn", async () => {
-      // 创建一个 mock queryRunner，其中 driver.options.type 不是 "better-sqlite3"
       const mockQueryRunner = {
         connection: {
           driver: {
@@ -831,47 +766,39 @@ describe("FL - Alter Table", () => {
         changeColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .alterColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when connection is undefined in addColumn", async () => {
-      // 创建一个 mock queryRunner，其中 connection 为 undefined
       const mockQueryRunner = {
         connection: undefined,
         addColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .addColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
 
     it("should handle case when connection is undefined in alterColumn", async () => {
-      // 创建一个 mock queryRunner，其中 connection 为 undefined
       const mockQueryRunner = {
         connection: undefined,
         changeColumn: async () => {},
       } as any;
 
-      // 这应该不会抛出错误，只是不会进行 SQLite 特殊处理
       await FL.use(mockQueryRunner)
         .alter.table("test_table")
         .alterColumn("id").int.primary.autoIncrement
         .execute();
 
-      // 验证没有抛出错误
       expect(true).toBe(true);
     });
   });

@@ -61,7 +61,7 @@ describe("FL - Alter Table", () => {
       .alter.table("posts")
       .addColumn("content").text.nullable
       .addColumn("author").varchar(255).notNull
-      .addColumn("createdAt").datetime.default("CURRENT_TIMESTAMP")
+      .addColumn("createdAt").timestamp.default("CURRENT_TIMESTAMP")
       .execute();
 
     const tables = await queryRunner.getTables();
@@ -188,8 +188,8 @@ describe("FL - Alter Table", () => {
     await FL.use(queryRunner)
       .alter.table("products")
       .alterColumn("name").varchar(255).notNull
-      .addColumn("isActive").boolean.default(true)
-      .addColumn("createdAt").datetime.default("CURRENT_TIMESTAMP")
+      .addColumn("isActive").smallint.default(1)
+      .addColumn("createdAt").timestamp.default("CURRENT_TIMESTAMP")
       .addColumn("amount").decimal(10, 2).nullable
       .addColumn("price").bigint.nullable
       .execute();
@@ -205,7 +205,7 @@ describe("FL - Alter Table", () => {
     expect(priceColumn?.type.toLowerCase()).toContain("bigint");
 
     const isActiveColumn = productsTable?.columns.find((c: any) => c.name === "isActive");
-    expect(isActiveColumn?.type.toLowerCase()).toBe("boolean");
+    expect(isActiveColumn?.type.toLowerCase()).toBe("smallint");
   });
 
   describe("AlterColumnBuilder - Type Methods", () => {
@@ -263,40 +263,40 @@ describe("FL - Alter Table", () => {
       expect(column?.type.toLowerCase()).toBe("text");
     });
 
-    it("should alter column to boolean type", async () => {
+    it("should alter column to smallint type", async () => {
       await FL.use(queryRunner)
-        .create.table("test_boolean")
+        .create.table("test_smallint")
         .column("id").int.primary.autoIncrement
         .column("isActive").int.nullable
         .execute();
 
       await FL.use(queryRunner)
-        .alter.table("test_boolean")
-        .alterColumn("isActive").boolean.default(false)
+        .alter.table("test_smallint")
+        .alterColumn("isActive").smallint.default(0)
         .execute();
 
       const tables = await queryRunner.getTables();
-      const table = tables.find((t: any) => t.name === "test_boolean");
+      const table = tables.find((t: any) => t.name === "test_smallint");
       const column = table?.columns.find((c: any) => c.name === "isActive");
-      expect(column?.type.toLowerCase()).toBe("boolean");
+      expect(column?.type.toLowerCase()).toBe("smallint");
     });
 
-    it("should alter column to datetime type", async () => {
+    it("should alter column to timestamp type", async () => {
       await FL.use(queryRunner)
-        .create.table("test_datetime")
+        .create.table("test_timestamp")
         .column("id").int.primary.autoIncrement
         .column("createdAt").varchar(50).nullable
         .execute();
 
       await FL.use(queryRunner)
-        .alter.table("test_datetime")
-        .alterColumn("createdAt").datetime.default("CURRENT_TIMESTAMP")
+        .alter.table("test_timestamp")
+        .alterColumn("createdAt").timestamp.default("CURRENT_TIMESTAMP")
         .execute();
 
       const tables = await queryRunner.getTables();
-      const table = tables.find((t: any) => t.name === "test_datetime");
+      const table = tables.find((t: any) => t.name === "test_timestamp");
       const column = table?.columns.find((c: any) => c.name === "createdAt");
-      expect(column?.type.toLowerCase()).toBe("datetime");
+      expect(column?.type.toLowerCase()).toBe("timestamp");
     });
 
     it("should alter column to date type", async () => {

@@ -80,7 +80,7 @@ describe("FL - Create Index", () => {
       .column("id").int.primary.autoIncrement
       .column("userId").int.notNull
       .column("status").varchar(50).notNull
-      .column("createdAt").datetime.notNull
+      .column("createdAt").timestamp.notNull
       .execute();
 
     await FL.use(queryRunner)
@@ -103,7 +103,7 @@ describe("FL - Create Index", () => {
       .column("id").int.primary.autoIncrement
       .column("authorId").int.notNull
       .column("categoryId").int.notNull
-      .column("publishedAt").datetime.nullable
+      .column("publishedAt").timestamp.nullable
       .execute();
 
     await FL.use(queryRunner)

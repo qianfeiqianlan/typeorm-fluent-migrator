@@ -61,8 +61,8 @@ describe("FL - Create Table", () => {
       .column("id").int.primary.autoIncrement
       .column("title").varchar(100).notNull
       .column("content").text.nullable
-      .column("isPublished").boolean.default(false)
-      .column("createdAt").datetime.default("CURRENT_TIMESTAMP")
+      .column("isPublished").smallint.default(0)
+      .column("createdAt").timestamp.default("CURRENT_TIMESTAMP")
       .column("price").decimal(10, 2).nullable
       .execute();
 
@@ -75,8 +75,8 @@ describe("FL - Create Table", () => {
     expect(contentColumn?.type.toLowerCase()).toBe("text");
 
     const isPublishedColumn = postsTable?.columns.find((c: any) => c.name === "isPublished");
-    expect(isPublishedColumn?.type.toLowerCase()).toBe("boolean");
-    expect(isPublishedColumn?.default === false || isPublishedColumn?.default === "false").toBe(true);
+    expect(isPublishedColumn?.type.toLowerCase()).toBe("smallint");
+    expect(isPublishedColumn?.default === 0 || isPublishedColumn?.default === "0").toBe(true);
   });
 
   it("should create a table with foreign key", async () => {

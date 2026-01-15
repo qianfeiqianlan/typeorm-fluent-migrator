@@ -136,18 +136,56 @@ export class CreateIndexes1623456792000 implements MigrationInterface {
 }
 ```
 
+### 使用数据库特定类型
+
+```typescript
+import { FL, ColumnTypes } from 'typeorm-fluent-migrator';
+
+export class CreateProductsTable1623456793000 implements MigrationInterface {
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .create.table('products')
+            .column('id').type(ColumnTypes.MYSQL.BIGINT).primary.autoIncrement
+            .column('name').type(ColumnTypes.POSTGRES.TEXT).notNull
+            .column('price').type(ColumnTypes.SQL_SERVER.MONEY).nullable
+            .column('metadata').type(ColumnTypes.POSTGRES.JSONB).nullable
+            .execute();
+    }
+
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.table('products');
+    }
+}
+```
+
 ## 📚 API 参考
 
 ### 列类型
 
+**内置类型方法：**
 - `.int` - 整数类型
+- `.integer` - 整数类型（别名）
+- `.smallint` - 小整数类型
 - `.bigint` - 大整数类型
+- `.float` - 浮点类型
+- `.real` - 实数类型
+- `.decimal(precision?, scale?)` - 小数类型
+- `.numeric(precision?, scale?)` - 数值类型
+- `.char(length?)` - 固定长度字符串
 - `.varchar(length?)` - 可变长度字符串
 - `.text` - 文本类型
-- `.boolean` - 布尔类型
-- `.datetime` - 日期时间类型
+- `.json` - JSON 类型
 - `.date` - 日期类型
-- `.decimal(precision?, scale?)` - 小数类型
+- `.time` - 时间类型
+- `.timestamp` - 时间戳类型
+
+**通过 `type()` 方法使用数据库特定类型：**
+- `.type(ColumnTypes.MYSQL.*)` - MySQL 特定类型（如 `ColumnTypes.MYSQL.INT`、`ColumnTypes.MYSQL.VARCHAR`）
+- `.type(ColumnTypes.POSTGRES.*)` - PostgreSQL 特定类型（如 `ColumnTypes.POSTGRES.JSONB`、`ColumnTypes.POSTGRES.CITEXT`）
+- `.type(ColumnTypes.SQL_SERVER.*)` - SQL Server 特定类型（如 `ColumnTypes.SQL_SERVER.NVARCHAR`、`ColumnTypes.SQL_SERVER.MONEY`）
+- `.type(ColumnTypes.ORACLE.*)` - Oracle 特定类型（如 `ColumnTypes.ORACLE.NUMBER`、`ColumnTypes.ORACLE.CLOB`）
+- `.type(ColumnTypes.SQLITE.*)` - SQLite 特定类型（如 `ColumnTypes.SQLITE.DATETIME`、`ColumnTypes.SQLITE.BLOB`）
+- 以及更多通过 `ColumnTypes.*` 访问的数据库类型
 
 ### 列约束
 
@@ -208,6 +246,7 @@ export class CreateIndexes1623456792000 implements MigrationInterface {
 - `.addColumn(name)` - 链式调用以添加另一个列
 - `.dropColumn(name)` - 链式调用以删除列（仅在修改表上下文中）
 - `.alterColumn(name)` - 链式调用以修改列（仅在修改表上下文中）
+- `.type(type)` - 使用 `AllDataTypes` 设置列类型（如 `ColumnTypes.MYSQL.INT`）
 - `.execute()` - 执行所有待处理的操作
 
 ## 🎯 对比
@@ -268,8 +307,7 @@ await FL.use(queryRunner)
 - ✅ `alter.table()` 支持 `addColumn`、`dropColumn`、`alterColumn`
 - ✅ 外键支持 `references()`、`onDelete()`、`onUpdate()`
 - ✅ 索引支持 `create.index()` 和 `drop.index()`
-- ✅ `alter.table()` 支持 `addColumn`、`dropColumn`、`alterColumn`
-- ✅ 外键支持 `references()`、`onDelete()`、`onUpdate()`
+- ✅ 通过 `type()` 方法支持数据库特定类型（`ColumnTypes`）
 - ✅ 完整的 TypeScript 类型安全
 - ✅ SQLite 兼容性，自动类型转换
 
@@ -305,6 +343,9 @@ npm run test:coverage
 
 # 构建
 npm run build
+
+# 格式化代码
+npm run format
 
 # 拼写检查
 npm run spellcheck

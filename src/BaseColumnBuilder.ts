@@ -1,4 +1,5 @@
 import { TableColumnOptions } from 'typeorm';
+import { AllDataTypes } from './SupportedDataTypes';
 
 export abstract class BaseColumnBuilder {
     protected options: Partial<TableColumnOptions> = {};
@@ -137,5 +138,10 @@ export abstract class BaseColumnBuilder {
 
     getColumnName() {
         return this.name;
+    }
+
+    type(type: AllDataTypes) {
+        this.options.type = type;
+        return this;
     }
 }

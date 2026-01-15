@@ -136,18 +136,56 @@ export class CreateIndexes1623456792000 implements MigrationInterface {
 }
 ```
 
+### Using Database-Specific Types
+
+```typescript
+import { FL, ColumnTypes } from 'typeorm-fluent-migrator';
+
+export class CreateProductsTable1623456793000 implements MigrationInterface {
+    async up(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner)
+            .create.table('products')
+            .column('id').type(ColumnTypes.MYSQL.BIGINT).primary.autoIncrement
+            .column('name').type(ColumnTypes.POSTGRES.TEXT).notNull
+            .column('price').type(ColumnTypes.SQL_SERVER.MONEY).nullable
+            .column('metadata').type(ColumnTypes.POSTGRES.JSONB).nullable
+            .execute();
+    }
+
+    async down(queryRunner: QueryRunner): Promise<void> {
+        await FL.use(queryRunner).drop.table('products');
+    }
+}
+```
+
 ## 📚 API Reference
 
 ### Column Types
 
+**Built-in Type Methods:**
 - `.int` - Integer type
+- `.integer` - Integer type (alias)
+- `.smallint` - Small integer type
 - `.bigint` - Big integer type
+- `.float` - Float type
+- `.real` - Real type
+- `.decimal(precision?, scale?)` - Decimal type
+- `.numeric(precision?, scale?)` - Numeric type
+- `.char(length?)` - Fixed-length character string
 - `.varchar(length?)` - Variable character string
 - `.text` - Text type
-- `.boolean` - Boolean type
-- `.datetime` - DateTime type
+- `.json` - JSON type
 - `.date` - Date type
-- `.decimal(precision?, scale?)` - Decimal type
+- `.time` - Time type
+- `.timestamp` - Timestamp type
+
+**Database-Specific Types via `type()` method:**
+- `.type(ColumnTypes.MYSQL.*)` - MySQL-specific types (e.g., `ColumnTypes.MYSQL.INT`, `ColumnTypes.MYSQL.VARCHAR`)
+- `.type(ColumnTypes.POSTGRES.*)` - PostgreSQL-specific types (e.g., `ColumnTypes.POSTGRES.JSONB`, `ColumnTypes.POSTGRES.CITEXT`)
+- `.type(ColumnTypes.SQL_SERVER.*)` - SQL Server-specific types (e.g., `ColumnTypes.SQL_SERVER.NVARCHAR`, `ColumnTypes.SQL_SERVER.MONEY`)
+- `.type(ColumnTypes.ORACLE.*)` - Oracle-specific types (e.g., `ColumnTypes.ORACLE.NUMBER`, `ColumnTypes.ORACLE.CLOB`)
+- `.type(ColumnTypes.SQLITE.*)` - SQLite-specific types (e.g., `ColumnTypes.SQLITE.DATETIME`, `ColumnTypes.SQLITE.BLOB`)
+- And more database types via `ColumnTypes.*`
 
 ### Column Constraints
 
@@ -208,6 +246,7 @@ When working with columns, you can chain operations:
 - `.addColumn(name)` - Chain to add another column
 - `.dropColumn(name)` - Chain to drop a column (only in alter context)
 - `.alterColumn(name)` - Chain to alter a column (only in alter context)
+- `.type(type)` - Set column type using `AllDataTypes` (e.g., `ColumnTypes.MYSQL.INT`)
 - `.execute()` - Execute all pending operations
 
 ## 🎯 Comparison
@@ -268,6 +307,7 @@ await FL.use(queryRunner)
 - ✅ `alter.table()` with `addColumn`, `dropColumn`, `alterColumn`
 - ✅ Foreign key support with `references()`, `onDelete()`, `onUpdate()`
 - ✅ Index support with `create.index()` and `drop.index()`
+- ✅ Database-specific types via `type()` method with `ColumnTypes`
 - ✅ Full TypeScript type safety
 - ✅ SQLite compatibility with automatic type conversion
 
@@ -303,6 +343,9 @@ npm run test:coverage
 
 # Build
 npm run build
+
+# Format code
+npm run format
 
 # Spell check
 npm run spellcheck

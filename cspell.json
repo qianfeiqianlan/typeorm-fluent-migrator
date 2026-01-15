@@ -55,6 +55,7 @@
         "shorttext",
         "smalldatetime",
         "smalldecimal",
+        "smallint",
         "smallmoney",
         "SQLite",
         "sqljs",

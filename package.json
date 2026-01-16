@@ -1,6 +1,6 @@
 {
     "name": "typeorm-fluent-migrator",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Enhanced migrator for TypeORM with fluent-style migration capabilities (批量迁移、自定义回滚、迁移策略等)",
     "homepage": "https://github.com/qianfeiqianlan/typeorm-fluent-migrator#readme",
     "bugs": {
